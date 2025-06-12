@@ -42,6 +42,7 @@ const int lowestMIDINote = 36; // lowest note on the piano, C2
 const int MIDI_CHANNEL = 1; //set MIDI channel to 1
 uint8_t keyToMidiMap[64];
 boolean keyPressed[64];
+boolean groupValue[8];
 int noteVelocity = 127;
 
 
@@ -100,6 +101,15 @@ void loop() {
 		scanRow(bits[row]);
 
 		// check if any keys were pressed - columns will have HIGH output in this case corresponding
+		groupValue[0] = digitalRead(col0);
+		groupValue[1] = digitalRead(col1);
+		groupValue[2] = digitalRead(col2);
+		groupValue[3] = digitalRead(col3);
+		groupValue[4] = digitalRead(col4);
+		groupValue[5] = digitalRead(col5);
+		groupValue[6] = digitalRead(col6);
+		groupValue[7] = digitalRead(col7);
+
 		int groupValue0 = digitalRead(col0);
 		int groupValue1 = digitalRead(col1);
 		int groupValue2 = digitalRead(col2);
@@ -113,6 +123,16 @@ void loop() {
 		if (groupValue0 != 0 || groupValue1 != 0 || groupValue2 != 0
 				|| groupValue3 != 0 || groupValue4 != 0 || groupValue5 != 0
 				|| groupValue6 != 0 || groupValue7 != 0) {
+			
+			for (int i = 0; i < 8; i++) {
+				if (groupValue[0] != 0 && !keyPressed[row]) {
+					keyPressed[row + i*8] = true;
+					MIDI.sendNoteOn(keyToMidiMap[row + i*8], noteVelocity, MIDI_CHANNEL);
+					debug_row_and_col(i, row, keyToMidiMap[row + i*8]);
+				}
+			}
+
+			/*
 
 			if (groupValue0 != 0 && !keyPressed[row]) {
 				keyPressed[row] = true;
@@ -161,9 +181,18 @@ void loop() {
 				MIDI.sendNoteOn(keyToMidiMap[row + 56], noteVelocity, MIDI_CHANNEL);
 				debug_row_and_col(7, row, keyToMidiMap[row + 56]);
 			}
-		}
+		}*/
 
 		// process if any combination of keys are released
+
+		for (int i = 0; i < 8; i++) {
+			if (groupValue[0] == 0 && keyPressed[row]) {
+				keyPressed[row + i*8] = false;
+				MIDI.sendNoteOff(keyToMidiMap[row + i*8], 0, MIDI_CHANNEL);
+				debug_row_and_col(i, row, keyToMidiMap[row + i*8]);
+			}
+		} /*
+
 		if (groupValue0 == 0 && keyPressed[row]) {
 			keyPressed[row] = false;
 			MIDI.sendNoteOff(keyToMidiMap[row], 0, MIDI_CHANNEL);
@@ -211,7 +240,7 @@ void loop() {
 			MIDI.sendNoteOff(keyToMidiMap[row + 56], 0, MIDI_CHANNEL);
 			debug_row_and_col(7, row, keyToMidiMap[row + 56]);
 		}
-	}
+	}*/
 }
 
 void debug_row_and_col(int col, int row, int key) {
