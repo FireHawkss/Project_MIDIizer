@@ -2,10 +2,10 @@
 This project aims to convert an old digital piano (ARK-2172) to a MIDI controller to improve the sound quality and functionality
 
 ## Initial problem
-The piano is okay at producing sounds if keys are pressed one by one. However if one wants to press two (or god forbid three!) keys at the same time to play chords on the piano then the sounds quality quickly breaks down.
+The piano is okay at producing sounds if keys are pressed one by one. However if one wants to press two (or god forbid three!) keys at the same time to play chords on the piano then the sound quality quickly breaks down.
 
 ## Solution
-Disconnect the keys of the piano from the outdated controller of the piano and connect it to an arduino Uno (or similar) microcontroller to convert the the key presses into MIDI messages. This way the microcontroller doesn't need to produce the sounds itself and the heavy-lifting can be done by the computer using a VST (Virtual Studio Technology) to produce quality piano sounds
+Disconnect the keys of the piano from the outdated controller of the piano and connect it to an arduino Uno (or similar) microcontroller to convert the key presses into MIDI messages. This way the microcontroller doesn't need to produce the sounds itself and the heavy-lifting can be done by the computer using a VST (Virtual Studio Technology) to produce quality piano sounds
 
 # Practical realisation
 ## Electronics setup and explanation
