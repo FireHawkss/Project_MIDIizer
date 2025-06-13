@@ -9,7 +9,7 @@ Disconnect the keys of the piano from the outdated controller of the piano and c
 
 # Practical realisation
 ## Electronics setup and explanation
-Most digital pianos, including this one, use a matrix system to scan for key presses to reduce the amount of cables and inputs needed. In this project we connect the matrix to the Arduino instead of the toaster quality controller in the piano. 
+Most digital pianos, including this one, use a matrix system[^1] to scan for key presses to reduce the amount of cables and inputs needed. In this project we connect the matrix to the Arduino instead of the toaster quality controller in the piano. The method and code is inspired by this article[^2]
 
 The matrix consists of 16 cables (8 rows, 8 columns) for 61 piano keys. However, the Arduino does not have enough inputs for all 16 cables. So the rows are connected the shift register to reduce the cables needed for the rows from 8 to 3. 
 
@@ -23,4 +23,5 @@ To be able to read the matrix the rows are connected to the shift register (outp
 - 8 10kohm resistors
 
 # Helpful resources
-http://www.codetinkerhack.com/2012/11/how-to-turn-piano-toy-into-midi.html
+[^1]: https://en.wikipedia.org/wiki/Keyboard_matrix_circuit#:~:text=A%20keyboard%20matrix%20circuit%20is,of%20range%20(61%20notes). and http://www.openmusiclabs.com/learning/digital/input-matrix-scanning/keyboard/index.html
+[^2]: http://www.codetinkerhack.com/2012/11/how-to-turn-piano-toy-into-midi.html
