@@ -46,6 +46,10 @@ boolean keyPressed[64];
 int groupValue[8];
 int noteVelocity = 127;
 
+int keynum = 0;
+
+char str[64];//pure debugging string
+
 
 // use prepared bit vectors instead of shifting bit left everytime
 int bits[] = { B00000001, B00000010, B00000100, B00001000, B00010000, B00100000, B01000000, B10000000 };
@@ -61,6 +65,7 @@ void scanRow(int value) {
 void setup() {
 	
 	// Map scan matrix buttons/keys to actual Midi note number. Lowest num 36 corresponds to C2 MIDI note.
+	//each key on the piano gets numbered from left to right, from 0 to 63
 	for (int i = 0; i < 8; i++) {
 		keyToMidiMap[i*8] = lowestMIDINote + i*8 + 0;
 		keyToMidiMap[i*8 + 1] = lowestMIDINote + i*8 + 1; 
@@ -111,149 +116,45 @@ void loop() {
 		groupValue[6] = digitalRead(column6);
 		groupValue[7] = digitalRead(column7);
 
-		int groupValue0 = digitalRead(column0);
-		int groupValue1 = digitalRead(column1);
-		int groupValue2 = digitalRead(column2);
-		int groupValue3 = digitalRead(column3);
-		int groupValue4 = digitalRead(column4);
-		int groupValue5 = digitalRead(column5);
-		int groupValue6 = digitalRead(column6);
-		int groupValue7 = digitalRead(column7);		
+		/*
+		Serial.print("row: ");
+		Serial.print(row);
+		Serial.print("\n");
+		*/
 
 		// process if any combination of keys pressed
 		for (int col = 0; col < 8; col++) {
-			if (groupValue0 != 0 || groupValue1 != 0 || groupValue2 != 0
-					|| groupValue3 != 0 || groupValue4 != 0 || groupValue5 != 0
-					|| groupValue6 != 0 || groupValue7 != 0) {
+			keynum = row + col*8; //calculate key number based on row and column
+			/*
+			Serial.print("keynum: ");
+			Serial.print(keynum);
+			Serial.print("\n"); */
+
+			//sprintf(str, "groupValue[%d] = %d \n",col,groupValue[col]);
+			//Serial.print(str);
+
+			if (groupValue[0] != 0 || groupValue[1] != 0 || groupValue[2] != 0
+				|| groupValue[3] != 0 || groupValue[4] != 0 || groupValue[5] != 0
+				|| groupValue[6] != 0 || groupValue[7] != 0) {				
 				
-				
-				if (groupValue[0] != 0 && !keyPressed[row]) {
-					keyPressed[row + col*8] = true;
-					MIDI.sendNoteOn(keyToMidiMap[row + col*8], noteVelocity, MIDI_CHANNEL);
-					debug_row_and_col(col, row, keyToMidiMap[row + col*8]);
+				if (groupValue[col] != 0 && !keyPressed[keynum]) {
+					keyPressed[keynum] = true;
+					MIDI.sendNoteOn(keyToMidiMap[keynum], noteVelocity, MIDI_CHANNEL);
+					debug_row_and_col(col, row, keyToMidiMap[keynum]);
 				}
 			}
 			
-			if (groupValue[0] == 0 && keyPressed[row]) {
-				keyPressed[row + col*8] = false;
-				MIDI.sendNoteOff(keyToMidiMap[row + col*8], 0, MIDI_CHANNEL);
-				debug_row_and_col(col, row, keyToMidiMap[row + col*8]);
+			if (groupValue[col] == 0 && keyPressed[keynum]) {
+				keyPressed[keynum] = false;
+				MIDI.sendNoteOff(keyToMidiMap[keynum], 0, MIDI_CHANNEL);
+				debug_row_and_col(col, row, keyToMidiMap[keynum]);
 			}
 		}	
-
-			
-			/*
-			if (groupValue0 != 0 && !keyPressed[row]) {
-				keyPressed[row] = true;
-				MIDI.sendNoteOn(keyToMidiMap[row], noteVelocity, MIDI_CHANNEL);
-				debug_row_and_col(0, row, keyToMidiMap[row]);
-			} */ /*
-
-			if (groupValue1 != 0 && !keyPressed[row + 8]) {
-				keyPressed[row + 8] = true;
-				MIDI.sendNoteOn(keyToMidiMap[row + 8], noteVelocity, MIDI_CHANNEL);
-				debug_row_and_col(1, row, keyToMidiMap[row + 8]);
-			}
-
-			if (groupValue2 != 0 && !keyPressed[row + 16]) {
-				keyPressed[row + 16] = true;
-				MIDI.sendNoteOn(keyToMidiMap[row + 16], noteVelocity, MIDI_CHANNEL);
-				debug_row_and_col(2, row, keyToMidiMap[row + 16]);
-			}
-
-			if (groupValue3 != 0 && !keyPressed[row + 24]) {
-				keyPressed[row + 24] = true;
-				MIDI.sendNoteOn(keyToMidiMap[row + 24], noteVelocity, MIDI_CHANNEL);
-				debug_row_and_col(3, row, keyToMidiMap[row + 24]);
-			}
-
-			if (groupValue4 != 0 && !keyPressed[row + 32]) {
-				keyPressed[row + 32] = true;
-				MIDI.sendNoteOn(keyToMidiMap[row + 32], noteVelocity, MIDI_CHANNEL);
-				debug_row_and_col(4, row, keyToMidiMap[row + 32]);
-			}
-
-			if (groupValue5 != 0 && !keyPressed[row + 40]) {
-				keyPressed[row + 40] = true;
-				MIDI.sendNoteOn(keyToMidiMap[row + 40], noteVelocity, MIDI_CHANNEL);
-				debug_row_and_col(5, row, keyToMidiMap[row + 40]);
-			}
-
-			if (groupValue6 != 0 && !keyPressed[row + 48]) {
-				keyPressed[row + 48] = true;
-				MIDI.sendNoteOn(keyToMidiMap[row + 48], noteVelocity, MIDI_CHANNEL);
-				debug_row_and_col(6, row, keyToMidiMap[row + 48]);
-			}
-
-			if (groupValue7 != 0 && !keyPressed[row + 56]) {
-				keyPressed[row + 56] = true;
-				MIDI.sendNoteOn(keyToMidiMap[row + 56], noteVelocity, MIDI_CHANNEL);
-				debug_row_and_col(7, row, keyToMidiMap[row + 56]);
-			}
-		}*/
-
-		// process if any combination of keys are released
-		/*
-		for (int i = 0; i < 8; i++) {
-			if (groupValue[0] == 0 && keyPressed[row]) {
-				keyPressed[row + i*8] = false;
-				MIDI.sendNoteOff(keyToMidiMap[row + i*8], 0, MIDI_CHANNEL);
-				debug_row_and_col(i, row, keyToMidiMap[row + i*8]);
-			}
-		} */ /*
-
-		if (groupValue0 == 0 && keyPressed[row]) {
-			keyPressed[row] = false;
-			MIDI.sendNoteOff(keyToMidiMap[row], 0, MIDI_CHANNEL);
-			debug_row_and_col(0, row, keyToMidiMap[row]);
-		}
-
-		if (groupValue1 == 0 && keyPressed[row + 8]) {
-			keyPressed[row + 8] = false;
-			MIDI.sendNoteOff(keyToMidiMap[row + 8], 0, MIDI_CHANNEL);
-			debug_row_and_col(1, row, keyToMidiMap[row + 8]);
-		}
-
-		if (groupValue2 == 0 && keyPressed[row + 16]) {
-			keyPressed[row + 16] = false;
-			MIDI.sendNoteOff(keyToMidiMap[row + 16], 0, MIDI_CHANNEL);
-			debug_row_and_col(2, row, keyToMidiMap[row + 16]);
-		}
-
-		if (groupValue3 == 0 && keyPressed[row + 24]) {
-			keyPressed[row + 24] = false;
-			MIDI.sendNoteOff(keyToMidiMap[row + 24], 0, MIDI_CHANNEL);
-			debug_row_and_col(3, row, keyToMidiMap[row + 24]);
-		}
-
-		if (groupValue4 == 0 && keyPressed[row + 32]) {
-			keyPressed[row + 32] = false;
-			MIDI.sendNoteOff(keyToMidiMap[row + 32], 0, MIDI_CHANNEL);
-			debug_row_and_col(4, row, keyToMidiMap[row + 32]);
-		}
-
-		if (groupValue5 == 0 && keyPressed[row + 40]) {
-			keyPressed[row + 40] = false;
-			MIDI.sendNoteOff(keyToMidiMap[row + 40], 0, MIDI_CHANNEL);
-			debug_row_and_col(5, row, keyToMidiMap[row + 40]);
-		}
-
-		if (groupValue6 == 0 && keyPressed[row + 48]) {
-			keyPressed[row + 48] = false;
-			MIDI.sendNoteOff(keyToMidiMap[row + 48], 0, MIDI_CHANNEL);
-			debug_row_and_col(6, row, keyToMidiMap[row + 48]);
-		}
-
-		if (groupValue7 == 0 && keyPressed[row + 56]) {
-			keyPressed[row + 56] = false;
-			MIDI.sendNoteOff(keyToMidiMap[row + 56], 0, MIDI_CHANNEL);
-			debug_row_and_col(7, row, keyToMidiMap[row + 56]);
-		}*/
 	}
 }
 
 void debug_row_and_col(int col, int row, int key) {
-	/*
+	
 	Serial.print("col: ");
 	Serial.print(col);
 	Serial.print(", row: ");
@@ -261,5 +162,5 @@ void debug_row_and_col(int col, int row, int key) {
 	Serial.print(", key: ");
 	Serial.print(key);
 	Serial.print("\n");
-	*/
+	
 }
