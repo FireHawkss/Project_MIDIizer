@@ -106,7 +106,7 @@ void loop() {
 		// shift scan matrix to following row
 		scanRow(bits[row]);
 
-		// check if any keys were pressed - columns will have HIGH output in this case corresponding
+		// check if any keys were pressed - columns will have HIGH output in this case
 		groupValue[0] = digitalRead(column0);
 		groupValue[1] = digitalRead(column1);
 		groupValue[2] = digitalRead(column2);
@@ -116,19 +116,9 @@ void loop() {
 		groupValue[6] = digitalRead(column6);
 		groupValue[7] = digitalRead(column7);
 
-		/*
-		Serial.print("row: ");
-		Serial.print(row);
-		Serial.print("\n");
-		*/
-
 		// process if any combination of keys pressed
 		for (int col = 0; col < 8; col++) {
 			keynum = row + col*8; //calculate key number based on row and column
-			/*
-			Serial.print("keynum: ");
-			Serial.print(keynum);
-			Serial.print("\n"); */
 
 			//sprintf(str, "groupValue[%d] = %d \n",col,groupValue[col]);
 			//Serial.print(str);
@@ -140,27 +130,23 @@ void loop() {
 				if (groupValue[col] != 0 && !keyPressed[keynum]) {
 					keyPressed[keynum] = true;
 					MIDI.sendNoteOn(keyToMidiMap[keynum], noteVelocity, MIDI_CHANNEL);
-					debug_row_and_col(col, row, keyToMidiMap[keynum]);
+					debug_row_and_col(row, col, keyToMidiMap[keynum]);
 				}
 			}
 			
 			if (groupValue[col] == 0 && keyPressed[keynum]) {
 				keyPressed[keynum] = false;
 				MIDI.sendNoteOff(keyToMidiMap[keynum], 0, MIDI_CHANNEL);
-				debug_row_and_col(col, row, keyToMidiMap[keynum]);
+				debug_row_and_col(row, col, keyToMidiMap[keynum]);
 			}
 		}	
 	}
 }
 
-void debug_row_and_col(int col, int row, int key) {
-	
-	Serial.print("col: ");
-	Serial.print(col);
-	Serial.print(", row: ");
-	Serial.print(row);
-	Serial.print(", key: ");
-	Serial.print(key);
-	Serial.print("\n");
-	
+void debug_row_and_col(int row, int col, int key) {
+	/**/
+	char str2[64];
+
+	sprintf(str2, "col: %d, row: %d, key: %d\n", col, row, key);
+	Serial.print(str2);	
 }
