@@ -3,17 +3,8 @@
 //Note: if the serial terminal is open, Hairless will not be able read the MIDI data.
 MIDI_CREATE_DEFAULT_INSTANCE();
 //MIDI 60 is middle C
-// Pin Definitions
-// columns are connected to
-const int col0 = 9;
-const int col1 = 8;
-const int col2 = 7;
-const int col3 = 6;
-const int col4 = 5;
-const int col5 = 4;
-const int col6 = 3;
-const int col7 = 2;
 
+// Pin Definitions
 // The SN74HC595N is a serial-in parallel-out shift register
 /*
 Qb --> pin 3
@@ -34,6 +25,16 @@ SRCLK --> pin 10 (clock)
 _SRCLR --> 5V
 Qh' --> nothing 
 */
+// columns are connected to
+const int column0 = 9;
+const int column1 = 8;
+const int column2 = 7;
+const int column3 = 6;
+const int column4 = 5;
+const int column5 = 4;
+const int column6 = 3;
+const int column7 = 2;
+
 const int clock = 10; //SRCLK
 const int latch = 11; //RCLK
 const int data = 12; //SER
@@ -42,7 +43,7 @@ const int lowestMIDINote = 36; // lowest note on the piano, C2
 const int MIDI_CHANNEL = 1; //set MIDI channel to 1
 uint8_t keyToMidiMap[64];
 boolean keyPressed[64];
-boolean groupValue[8];
+int groupValue[8];
 int noteVelocity = 127;
 
 
@@ -76,14 +77,14 @@ void setup() {
 	pinMode(clock, OUTPUT);
 	pinMode(latch, OUTPUT);
 
-	pinMode(col0, INPUT);
-	pinMode(col1, INPUT);
-	pinMode(col2, INPUT);
-	pinMode(col3, INPUT);
-	pinMode(col4, INPUT);
-	pinMode(col5, INPUT);
-	pinMode(col6, INPUT);
-	pinMode(col7, INPUT);
+	pinMode(column0, INPUT);
+	pinMode(column1, INPUT);
+	pinMode(column2, INPUT);
+	pinMode(column3, INPUT);
+	pinMode(column4, INPUT);
+	pinMode(column5, INPUT);
+	pinMode(column6, INPUT);
+	pinMode(column7, INPUT);
 
 	MIDI.begin(MIDI_CHANNEL);
 	Serial.begin(115200); 
@@ -101,44 +102,52 @@ void loop() {
 		scanRow(bits[row]);
 
 		// check if any keys were pressed - columns will have HIGH output in this case corresponding
-		groupValue[0] = digitalRead(col0);
-		groupValue[1] = digitalRead(col1);
-		groupValue[2] = digitalRead(col2);
-		groupValue[3] = digitalRead(col3);
-		groupValue[4] = digitalRead(col4);
-		groupValue[5] = digitalRead(col5);
-		groupValue[6] = digitalRead(col6);
-		groupValue[7] = digitalRead(col7);
+		groupValue[0] = digitalRead(column0);
+		groupValue[1] = digitalRead(column1);
+		groupValue[2] = digitalRead(column2);
+		groupValue[3] = digitalRead(column3);
+		groupValue[4] = digitalRead(column4);
+		groupValue[5] = digitalRead(column5);
+		groupValue[6] = digitalRead(column6);
+		groupValue[7] = digitalRead(column7);
 
-		int groupValue0 = digitalRead(col0);
-		int groupValue1 = digitalRead(col1);
-		int groupValue2 = digitalRead(col2);
-		int groupValue3 = digitalRead(col3);
-		int groupValue4 = digitalRead(col4);
-		int groupValue5 = digitalRead(col5);
-		int groupValue6 = digitalRead(col6);
-		int groupValue7 = digitalRead(col7);		
+		int groupValue0 = digitalRead(column0);
+		int groupValue1 = digitalRead(column1);
+		int groupValue2 = digitalRead(column2);
+		int groupValue3 = digitalRead(column3);
+		int groupValue4 = digitalRead(column4);
+		int groupValue5 = digitalRead(column5);
+		int groupValue6 = digitalRead(column6);
+		int groupValue7 = digitalRead(column7);		
 
 		// process if any combination of keys pressed
-		if (groupValue0 != 0 || groupValue1 != 0 || groupValue2 != 0
-				|| groupValue3 != 0 || groupValue4 != 0 || groupValue5 != 0
-				|| groupValue6 != 0 || groupValue7 != 0) {
-			
-			for (int i = 0; i < 8; i++) {
+		for (int col = 0; col < 8; col++) {
+			if (groupValue0 != 0 || groupValue1 != 0 || groupValue2 != 0
+					|| groupValue3 != 0 || groupValue4 != 0 || groupValue5 != 0
+					|| groupValue6 != 0 || groupValue7 != 0) {
+				
+				
 				if (groupValue[0] != 0 && !keyPressed[row]) {
-					keyPressed[row + i*8] = true;
-					MIDI.sendNoteOn(keyToMidiMap[row + i*8], noteVelocity, MIDI_CHANNEL);
-					debug_row_and_col(i, row, keyToMidiMap[row + i*8]);
+					keyPressed[row + col*8] = true;
+					MIDI.sendNoteOn(keyToMidiMap[row + col*8], noteVelocity, MIDI_CHANNEL);
+					debug_row_and_col(col, row, keyToMidiMap[row + col*8]);
 				}
 			}
+			
+			if (groupValue[0] == 0 && keyPressed[row]) {
+				keyPressed[row + col*8] = false;
+				MIDI.sendNoteOff(keyToMidiMap[row + col*8], 0, MIDI_CHANNEL);
+				debug_row_and_col(col, row, keyToMidiMap[row + col*8]);
+			}
+		}	
 
+			
 			/*
-
 			if (groupValue0 != 0 && !keyPressed[row]) {
 				keyPressed[row] = true;
 				MIDI.sendNoteOn(keyToMidiMap[row], noteVelocity, MIDI_CHANNEL);
 				debug_row_and_col(0, row, keyToMidiMap[row]);
-			}
+			} */ /*
 
 			if (groupValue1 != 0 && !keyPressed[row + 8]) {
 				keyPressed[row + 8] = true;
@@ -184,14 +193,14 @@ void loop() {
 		}*/
 
 		// process if any combination of keys are released
-
+		/*
 		for (int i = 0; i < 8; i++) {
 			if (groupValue[0] == 0 && keyPressed[row]) {
 				keyPressed[row + i*8] = false;
 				MIDI.sendNoteOff(keyToMidiMap[row + i*8], 0, MIDI_CHANNEL);
 				debug_row_and_col(i, row, keyToMidiMap[row + i*8]);
 			}
-		} /*
+		} */ /*
 
 		if (groupValue0 == 0 && keyPressed[row]) {
 			keyPressed[row] = false;
@@ -239,8 +248,8 @@ void loop() {
 			keyPressed[row + 56] = false;
 			MIDI.sendNoteOff(keyToMidiMap[row + 56], 0, MIDI_CHANNEL);
 			debug_row_and_col(7, row, keyToMidiMap[row + 56]);
-		}
-	}*/
+		}*/
+	}
 }
 
 void debug_row_and_col(int col, int row, int key) {
