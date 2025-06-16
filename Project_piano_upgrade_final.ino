@@ -121,20 +121,14 @@ void loop() {
 			keynum = row + col*8; //calculate key number based on row and column
 
 			//sprintf(str, "groupValue[%d] = %d \n",col,groupValue[col]);
-			//Serial.print(str);
-
-			if (groupValue[0] != 0 || groupValue[1] != 0 || groupValue[2] != 0
-				|| groupValue[3] != 0 || groupValue[4] != 0 || groupValue[5] != 0
-				|| groupValue[6] != 0 || groupValue[7] != 0) {				
+			//Serial.print(str);		
 				
-				if (groupValue[col] != 0 && !keyPressed[keynum]) {
-					keyPressed[keynum] = true;
-					MIDI.sendNoteOn(keyToMidiMap[keynum], noteVelocity, MIDI_CHANNEL);
-					debug_row_and_col(row, col, keyToMidiMap[keynum]);
-				}
+			if (groupValue[col] == 1 && !keyPressed[keynum]) {
+				keyPressed[keynum] = true;
+				MIDI.sendNoteOn(keyToMidiMap[keynum], noteVelocity, MIDI_CHANNEL);
+				debug_row_and_col(row, col, keyToMidiMap[keynum]);
 			}
-			
-			if (groupValue[col] == 0 && keyPressed[keynum]) {
+			else if (groupValue[col] == 0 && keyPressed[keynum]) {
 				keyPressed[keynum] = false;
 				MIDI.sendNoteOff(keyToMidiMap[keynum], 0, MIDI_CHANNEL);
 				debug_row_and_col(row, col, keyToMidiMap[keynum]);
