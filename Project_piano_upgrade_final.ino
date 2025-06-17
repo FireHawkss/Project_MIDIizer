@@ -34,22 +34,24 @@ const int column4 = 5;
 const int column5 = 4;
 const int column6 = 3;
 const int column7 = 2;
+int columnValue[8]; //holds the digitalRead value of each column, 0 or 1
 
 const int clock = 10; //SRCLK
 const int latch = 11; //RCLK
 const int data = 12; //SER
 
-const int lowestMIDINote = 36; // lowest note on the piano, C2
-const int MIDI_CHANNEL = 1; //set MIDI channel to 1
-uint8_t keyToMidiMap[64];
-boolean keyPressed[64];
-int groupValue[8];
-int noteVelocity = 127;
-
+const int NUM_KEYS = 61; // 61 keys on the piano (but 8*8 = 64 keys in the matrix)
 int keynum = 0;
+const int lowestMIDINote = 36; // lowest note on the piano, C2
+int noteVelocity = 127;
+const int MIDI_CHANNEL = 1; //set MIDI channel to 1
+uint8_t keyToMidiMap[64]; //converts key number to MIDI note number
+
+boolean keyPressed[64];        // Debounced state: true = pressed, false = released
+uint32_t lastDebounceTime[64]; // Time when the key was last toggled (for debounce)
+bool keyReading[64];      // Latest raw reading from the key (before debounce)
 
 char str[64];//pure debugging string
-
 
 // use prepared bit vectors instead of shifting bit left everytime
 int bits[] = { B00000001, B00000010, B00000100, B00001000, B00010000, B00100000, B01000000, B10000000 };
@@ -107,40 +109,53 @@ void loop() {
 		scanRow(bits[row]);
 
 		// check if any keys were pressed - columns will have HIGH output in this case
-		groupValue[0] = digitalRead(column0);
-		groupValue[1] = digitalRead(column1);
-		groupValue[2] = digitalRead(column2);
-		groupValue[3] = digitalRead(column3);
-		groupValue[4] = digitalRead(column4);
-		groupValue[5] = digitalRead(column5);
-		groupValue[6] = digitalRead(column6);
-		groupValue[7] = digitalRead(column7);
+		columnValue[0] = digitalRead(column0);
+		columnValue[1] = digitalRead(column1);
+		columnValue[2] = digitalRead(column2);
+		columnValue[3] = digitalRead(column3);
+		columnValue[4] = digitalRead(column4);
+		columnValue[5] = digitalRead(column5);
+		columnValue[6] = digitalRead(column6);
+		columnValue[7] = digitalRead(column7);
 
-		// process if any combination of keys pressed
+		// process if any combination of keys pressed, with debouncing
+		const unsigned long debounceDelay = 0; // milliseconds
+
 		for (int col = 0; col < 8; col++) {
-			keynum = row + col*8; //calculate key number based on row and column
+			keynum = row + col * 8; // calculate key number based on row and column
 
-			//sprintf(str, "groupValue[%d] = %d \n",col,groupValue[col]);
-			//Serial.print(str);		
-				
-			if (groupValue[col] == 1 && !keyPressed[keynum]) {
-				keyPressed[keynum] = true;
-				MIDI.sendNoteOn(keyToMidiMap[keynum], noteVelocity, MIDI_CHANNEL);
-				debug_row_and_col(row, col, keyToMidiMap[keynum]);
+			if (keynum >= NUM_KEYS) {
+				continue; // skip if keynum exceeds the number of keys (matrix is 8*8=64 but we have 61 keys)
 			}
-			else if (groupValue[col] == 0 && keyPressed[keynum]) {
-				keyPressed[keynum] = false;
-				MIDI.sendNoteOff(keyToMidiMap[keynum], 0, MIDI_CHANNEL);
-				debug_row_and_col(row, col, keyToMidiMap[keynum]);
+
+			bool reading = (columnValue[col] == 1);
+
+			// Check if the reading has changed since last time
+			if (reading != keyReading[keynum]) {
+				lastDebounceTime[keynum] = millis();
+				keyReading[keynum] = reading;
 			}
-		}	
+
+			if ((millis() - lastDebounceTime[keynum]) > debounceDelay) {
+				if (reading != keyPressed[keynum]) {
+					keyPressed[keynum] = reading;
+					if (reading) {
+						MIDI.sendNoteOn(keyToMidiMap[keynum], noteVelocity, MIDI_CHANNEL);
+						debug_row_and_col(row, col, keyToMidiMap[keynum]);
+					} else {
+						MIDI.sendNoteOff(keyToMidiMap[keynum], 0, MIDI_CHANNEL);
+						debug_row_and_col(row, col, keyToMidiMap[keynum]);
+					}
+				}
+			}
+		}
 	}
 }
 
 void debug_row_and_col(int row, int col, int key) {
-	/**/
+	/*
 	char str2[64];
 
 	sprintf(str2, "col: %d, row: %d, key: %d\n", col, row, key);
-	Serial.print(str2);	
+	Serial.print(str2);	*/
 }
