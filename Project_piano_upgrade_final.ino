@@ -40,6 +40,7 @@ const int latch = 11; //RCLK
 const int data = 12; //SER
 
 const int lowestMIDINote = 36; // lowest note on the piano, C2
+const int NUM_KEYS = 61; // 61 keys on the piano (but 8*8 = 64 keys in the matrix)
 const int MIDI_CHANNEL = 1; //set MIDI channel to 1
 uint8_t keyToMidiMap[64];
 boolean keyPressed[64];
@@ -122,6 +123,10 @@ void loop() {
 
 			//sprintf(str, "groupValue[%d] = %d \n",col,groupValue[col]);
 			//Serial.print(str);
+
+			if (keynum >= NUM_KEYS) {
+				continue; // skip if keynum exceeds the number of keys (matrix is 8*8=64 but we have 61 keys)
+			}
 			
 			if (groupValue[col] != 0 && !keyPressed[keynum]) {
 				keyPressed[keynum] = true;
