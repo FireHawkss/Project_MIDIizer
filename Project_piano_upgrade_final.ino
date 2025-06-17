@@ -122,19 +122,13 @@ void loop() {
 
 			//sprintf(str, "groupValue[%d] = %d \n",col,groupValue[col]);
 			//Serial.print(str);
-
-			if (groupValue[0] != 0 || groupValue[1] != 0 || groupValue[2] != 0
-				|| groupValue[3] != 0 || groupValue[4] != 0 || groupValue[5] != 0
-				|| groupValue[6] != 0 || groupValue[7] != 0) {				
-				
-				if (groupValue[col] != 0 && !keyPressed[keynum]) {
-					keyPressed[keynum] = true;
-					MIDI.sendNoteOn(keyToMidiMap[keynum], noteVelocity, MIDI_CHANNEL);
-					debug_row_and_col(row, col, keyToMidiMap[keynum]);
-				}
-			}
 			
-			if (groupValue[col] == 0 && keyPressed[keynum]) {
+			if (groupValue[col] != 0 && !keyPressed[keynum]) {
+				keyPressed[keynum] = true;
+				MIDI.sendNoteOn(keyToMidiMap[keynum], noteVelocity, MIDI_CHANNEL);
+				debug_row_and_col(row, col, keyToMidiMap[keynum]);
+			}			
+			else if (groupValue[col] == 0 && keyPressed[keynum]) {
 				keyPressed[keynum] = false;
 				MIDI.sendNoteOff(keyToMidiMap[keynum], 0, MIDI_CHANNEL);
 				debug_row_and_col(row, col, keyToMidiMap[keynum]);
@@ -144,9 +138,9 @@ void loop() {
 }
 
 void debug_row_and_col(int row, int col, int key) {
-	/**/
+	/*
 	char str2[64];
 
 	sprintf(str2, "col: %d, row: %d, key: %d\n", col, row, key);
-	Serial.print(str2);	
+	Serial.print(str2);	*/
 }
