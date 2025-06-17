@@ -26,14 +26,14 @@ _SRCLR --> 5V
 Qh' --> nothing 
 */
 // columns are connected to
-const int column0 = 9;
-const int column1 = 8;
-const int column2 = 7;
-const int column3 = 6;
-const int column4 = 5;
-const int column5 = 4;
-const int column6 = 3;
-const int column7 = 2;
+const int column0 = 9; //P303
+const int column1 = 8; //P304
+const int column2 = 7; //P107
+const int column3 = 6; //P106
+const int column4 = 5; //P102
+const int column5 = 4; //P103
+const int column6 = 3; //P104
+const int column7 = 2; //P105
 
 const int clock = 10; //SRCLK
 const int latch = 11; //RCLK
@@ -108,6 +108,7 @@ void loop() {
 		scanRow(bits[row]);
 
 		// check if any keys were pressed - columns will have HIGH output in this case
+		
 		groupValue[0] = digitalRead(column0);
 		groupValue[1] = digitalRead(column1);
 		groupValue[2] = digitalRead(column2);
@@ -116,6 +117,20 @@ void loop() {
 		groupValue[5] = digitalRead(column5);
 		groupValue[6] = digitalRead(column6);
 		groupValue[7] = digitalRead(column7);
+		
+		/*
+		//low-level read of GPIO pins !danger, board specific!
+		groupValue[0] = ((R_PORT3->PIDR & bit(3)) == bit(3)); //P303
+		groupValue[1] = ((R_PORT3->PIDR & bit(4)) == bit(4)); //P304
+		groupValue[2] = ((R_PORT1->PIDR & bit(7)) == bit(7)); //P107
+		groupValue[3] = ((R_PORT1->PIDR & bit(6)) == bit(6)); //P106
+		groupValue[4] = ((R_PORT1->PIDR & bit(2)) == bit(2)); //P102
+		groupValue[5] = ((R_PORT1->PIDR & bit(3)) == bit(3)); //P103
+		groupValue[6] = ((R_PORT1->PIDR & bit(4)) == bit(4)); //P104
+		groupValue[7] = ((R_PORT1->PIDR & bit(5)) == bit(5)); //P105
+		*/
+
+		//GPIOA->IDR&0x02)==0x02
 
 		// process if any combination of keys pressed
 		for (int col = 0; col < 8; col++) {
@@ -131,21 +146,21 @@ void loop() {
 			if (groupValue[col] != 0 && !keyPressed[keynum]) {
 				keyPressed[keynum] = true;
 				MIDI.sendNoteOn(keyToMidiMap[keynum], noteVelocity, MIDI_CHANNEL);
-				debug_row_and_col(row, col, keyToMidiMap[keynum]);
+				//debug_row_and_col(row, col, keyToMidiMap[keynum]);
 			}			
 			else if (groupValue[col] == 0 && keyPressed[keynum]) {
 				keyPressed[keynum] = false;
 				MIDI.sendNoteOff(keyToMidiMap[keynum], 0, MIDI_CHANNEL);
-				debug_row_and_col(row, col, keyToMidiMap[keynum]);
+				//debug_row_and_col(row, col, keyToMidiMap[keynum]);
 			}
 		}	
 	}
 }
 
 void debug_row_and_col(int row, int col, int key) {
-	/*
+	
 	char str2[64];
 
 	sprintf(str2, "col: %d, row: %d, key: %d\n", col, row, key);
-	Serial.print(str2);	*/
+	Serial.print(str2);	
 }
